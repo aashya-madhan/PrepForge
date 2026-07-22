@@ -1,5 +1,5 @@
 # PrepForge — AI-Powered Placement Preparation Platform
-live demo  - [https://prep-forge-sand.vercel.app/](url)
+live demo  - https://prep-forge-sand.vercel.app/
 
 A professional, full-stack placement preparation platform built with React, Node.js, Express, MongoDB, Tailwind CSS, and Framer Motion.
 
