@@ -3,36 +3,41 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard, BookOpen, Brain, Building2, Target,
   CheckSquare, Bookmark, Mic, FileText, StickyNote, Library,
-  User, Settings, LogOut, Zap, ChevronRight, Shield
+  LogOut, Zap, ChevronRight, Shield, Timer, MessageSquare,
+  GitCompare, Sun, Moon
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { cn } from "../../lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { label: "Roadmap", icon: Target, path: "/roadmap" },
-  { label: "Question Bank", icon: BookOpen, path: "/questions" },
-  { label: "Mock Interview", icon: Mic, path: "/mock" },
-  { label: "Companies", icon: Building2, path: "/companies" },
-  { label: "Checklist", icon: CheckSquare, path: "/checklist" },
-  { label: "Notes", icon: StickyNote, path: "/notes" },
-  { label: "Flashcards", icon: Brain, path: "/flashcards" },
-  { label: "Bookmarks", icon: Bookmark, path: "/bookmarks" },
-  { label: "Resume Analyzer", icon: FileText, path: "/resume" },
-  { label: "Resources", icon: Library, path: "/resources" },
+  { label: "Dashboard",         icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Roadmap",           icon: Target,          path: "/roadmap" },
+  { label: "Question Bank",     icon: BookOpen,        path: "/questions" },
+  { label: "Mock Interview",    icon: Mic,             path: "/mock" },
+  { label: "Companies",         icon: Building2,       path: "/companies" },
+  { label: "Study Timer",       icon: Timer,           path: "/timer" },
+  { label: "Experiences",       icon: MessageSquare,   path: "/experiences" },
+  { label: "JD Matcher",        icon: GitCompare,      path: "/jd-matcher" },
+  { label: "Checklist",         icon: CheckSquare,     path: "/checklist" },
+  { label: "Notes",             icon: StickyNote,      path: "/notes" },
+  { label: "Flashcards",        icon: Brain,           path: "/flashcards" },
+  { label: "Bookmarks",         icon: Bookmark,        path: "/bookmarks" },
+  { label: "Resume Analyzer",   icon: FileText,        path: "/resume" },
+  { label: "Resources",         icon: Library,         path: "/resources" },
 ];
 
 export function Sidebar({ collapsed, onCollapse }) {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isDark, toggle } = useTheme();
 
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 h-screen bg-surface-0 border-r border-border flex flex-col z-40 transition-all duration-300",
-        collapsed ? "w-16" : "w-60"
-      )}
-    >
+    <aside className={cn(
+      "fixed left-0 top-0 h-screen border-r border-border flex flex-col z-40 transition-all duration-300",
+      "bg-surface-0",
+      collapsed ? "w-16" : "w-60"
+    )}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
         <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-purple rounded-lg flex items-center justify-center flex-shrink-0">
@@ -55,7 +60,7 @@ export function Sidebar({ collapsed, onCollapse }) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
         {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
-          const active = location.pathname === path;
+          const active = location.pathname === path || location.pathname.startsWith(path + "/");
           return (
             <Link key={path} to={path}
               className={cn(
@@ -66,7 +71,7 @@ export function Sidebar({ collapsed, onCollapse }) {
               )}
               title={collapsed ? label : ""}
             >
-              <Icon className={cn("flex-shrink-0", active ? "text-brand-400 w-4 h-4" : "w-4 h-4")} />
+              <Icon className={cn("flex-shrink-0 w-4 h-4", active && "text-brand-400")} />
               {!collapsed && <span>{label}</span>}
             </Link>
           );
@@ -88,8 +93,22 @@ export function Sidebar({ collapsed, onCollapse }) {
         )}
       </nav>
 
-      {/* User footer */}
+      {/* Footer */}
       <div className="border-t border-border p-3 space-y-0.5">
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-surface-3 transition-all w-full"
+          title={collapsed ? (isDark ? "Light Mode" : "Dark Mode") : ""}
+        >
+          {isDark
+            ? <Sun  className="w-4 h-4 flex-shrink-0 text-accent-yellow" />
+            : <Moon className="w-4 h-4 flex-shrink-0 text-brand-400" />
+          }
+          {!collapsed && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
+        </button>
+
+        {/* Profile */}
         <Link to="/profile"
           className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-3 transition-all"
         >
@@ -103,6 +122,8 @@ export function Sidebar({ collapsed, onCollapse }) {
             </motion.div>
           )}
         </Link>
+
+        {/* Logout */}
         <button
           onClick={logout}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-red-400 hover:bg-surface-3 transition-all w-full"

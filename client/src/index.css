@@ -12,6 +12,46 @@
     color-scheme: dark;
   }
 
+  /* ── Dark mode (default) ── */
+  html.dark body {
+    @apply bg-surface-1 text-text-primary;
+  }
+
+  /* ── Light mode overrides ── */
+  html.light {
+    color-scheme: light;
+  }
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+  html.light .card        { background: #ffffff; border-color: #e2e8f0; }
+  html.light .card-hover  { background: #ffffff; border-color: #e2e8f0; }
+  html.light .card-hover:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  html.light .input       { background: #ffffff; border-color: #e2e8f0; color: #0f172a; }
+  html.light .input::placeholder { color: #94a3b8; }
+  html.light .input:focus { border-color: #3b82f6; }
+  html.light .btn-secondary { background: #f1f5f9; border-color: #e2e8f0; color: #334155; }
+  html.light .btn-secondary:hover { background: #e2e8f0; border-color: #cbd5e1; }
+  html.light .btn-ghost   { color: #64748b; }
+  html.light .btn-ghost:hover { background: #f1f5f9; color: #334155; }
+  html.light .tag         { background: #f1f5f9; color: #64748b; }
+  html.light aside        { background: #ffffff; border-color: #e2e8f0; }
+  html.light .nav-item    { color: #64748b; }
+  html.light .nav-item:hover { background: #f1f5f9; color: #334155; }
+  html.light .nav-item-active { background: #eff6ff; color: #1d4ed8; }
+  html.light main         { background: #f8fafc; }
+  html.light .bg-surface-0  { background-color: #f8fafc; }
+  html.light .bg-surface-1  { background-color: #f8fafc; }
+  html.light .bg-surface-2  { background-color: #ffffff; }
+  html.light .bg-surface-3  { background-color: #f1f5f9; }
+  html.light .bg-surface-4  { background-color: #e2e8f0; }
+  html.light .border-border { border-color: #e2e8f0; }
+  html.light .text-text-primary   { color: #0f172a; }
+  html.light .text-text-secondary { color: #334155; }
+  html.light .text-text-muted     { color: #64748b; }
+  html.light .divider { border-color: #e2e8f0; }
+
   body {
     @apply bg-surface-1 text-text-primary font-sans antialiased;
     min-height: 100vh;

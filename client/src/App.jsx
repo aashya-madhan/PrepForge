@@ -2,30 +2,33 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { AppLayout } from "./components/layout/AppLayout";
 
 // Pages
-import { Landing } from "./pages/Landing";
-import { Login } from "./pages/auth/Login";
-import { Register } from "./pages/auth/Register";
-import { Dashboard } from "./pages/Dashboard";
-import { Roadmap } from "./pages/Roadmap";
-import { QuestionBank } from "./pages/QuestionBank";
-import { MockInterview } from "./pages/MockInterview";
-import { Companies } from "./pages/Companies";
-import { CompanyPrep } from "./pages/CompanyPrep";
-import { Checklist } from "./pages/Checklist";
-import { Notes } from "./pages/Notes";
-import { Flashcards } from "./pages/Flashcards";
-import { Bookmarks } from "./pages/Bookmarks";
+import { Landing }        from "./pages/Landing";
+import { Login }          from "./pages/auth/Login";
+import { Register }       from "./pages/auth/Register";
+import { Onboarding }     from "./pages/Onboarding";
+import { Dashboard }      from "./pages/Dashboard";
+import { Roadmap }        from "./pages/Roadmap";
+import { QuestionBank }   from "./pages/QuestionBank";
+import { MockInterview }  from "./pages/MockInterview";
+import { Companies }      from "./pages/Companies";
+import { CompanyPrep }    from "./pages/CompanyPrep";
+import { Checklist }      from "./pages/Checklist";
+import { Notes }          from "./pages/Notes";
+import { Flashcards }     from "./pages/Flashcards";
+import { Bookmarks }      from "./pages/Bookmarks";
 import { ResumeAnalyzer } from "./pages/ResumeAnalyzer";
-import { Resources } from "./pages/Resources";
-import { Profile } from "./pages/Profile";
+import { Resources }      from "./pages/Resources";
+import { Profile }        from "./pages/Profile";
+import { Timer }          from "./pages/Timer";
+import { Experiences }    from "./pages/Experiences";
+import { JDMatcher }      from "./pages/JDMatcher";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, staleTime: 30000 },
-  },
+  defaultOptions: { queries: { retry: 1, staleTime: 30000 } },
 });
 
 function RequireAuth({ children }) {
@@ -47,47 +50,63 @@ function PublicRoute({ children }) {
   return user ? <Navigate to="/dashboard" replace /> : children;
 }
 
+// After login, check if onboarding needed
+function AfterAuthRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  const onboarded = localStorage.getItem("onboarded");
+  if (!onboarded) return <Navigate to="/onboarding" replace />;
+  return children;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public */}
+              <Route path="/"         element={<Landing />} />
+              <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-            {/* Protected App Shell */}
-            <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/roadmap" element={<Roadmap />} />
-              <Route path="/questions" element={<QuestionBank />} />
-              <Route path="/mock" element={<MockInterview />} />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/companies/:id" element={<CompanyPrep />} />
-              <Route path="/checklist" element={<Checklist />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="/flashcards" element={<Flashcards />} />
-              <Route path="/bookmarks" element={<Bookmarks />} />
-              <Route path="/resume" element={<ResumeAnalyzer />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
+              {/* Onboarding — after first login */}
+              <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: { background: "#16161f", border: "1px solid #2a2a40", color: "#f1f0ff" },
-            success: { iconTheme: { primary: "#34d399", secondary: "#16161f" } },
-            error: { iconTheme: { primary: "#f87171", secondary: "#16161f" } },
-          }}
-        />
-      </AuthProvider>
+              {/* Protected App Shell */}
+              <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+                <Route path="/dashboard"    element={<Dashboard />} />
+                <Route path="/roadmap"      element={<Roadmap />} />
+                <Route path="/questions"    element={<QuestionBank />} />
+                <Route path="/mock"         element={<MockInterview />} />
+                <Route path="/companies"    element={<Companies />} />
+                <Route path="/companies/:id" element={<CompanyPrep />} />
+                <Route path="/checklist"    element={<Checklist />} />
+                <Route path="/notes"        element={<Notes />} />
+                <Route path="/flashcards"   element={<Flashcards />} />
+                <Route path="/bookmarks"    element={<Bookmarks />} />
+                <Route path="/resume"       element={<ResumeAnalyzer />} />
+                <Route path="/resources"    element={<Resources />} />
+                <Route path="/profile"      element={<Profile />} />
+                <Route path="/timer"        element={<Timer />} />
+                <Route path="/experiences"  element={<Experiences />} />
+                <Route path="/jd-matcher"   element={<JDMatcher />} />
+              </Route>
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster position="top-right"
+            toastOptions={{
+              style: { background: "#16161f", border: "1px solid #2a2a40", color: "#f1f0ff" },
+              success: { iconTheme: { primary: "#34d399", secondary: "#16161f" } },
+              error:   { iconTheme: { primary: "#f87171", secondary: "#16161f" } },
+            }}
+          />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

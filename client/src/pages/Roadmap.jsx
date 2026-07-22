@@ -1,10 +1,146 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, CheckCircle, Circle, Loader2, Sparkles, RotateCcw, Star, TrendingUp, Clock, BookOpen } from "lucide-react";
+import { Target, CheckCircle, Circle, Loader2, Sparkles, RotateCcw, Star, TrendingUp, Clock, BookOpen, Download } from "lucide-react";
 import { ALL_SKILLS } from "../lib/utils";
 import api from "../lib/api";
 import toast from "react-hot-toast";
 import { ProgressBar } from "../components/ui/ProgressBar";
+
+// ─── PDF Download ─────────────────────────────────────────────────────────────
+function downloadRoadmapPDF(plan, selectedSkills) {
+  const weeks = plan?.plan || [];
+  const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  const skillsList = selectedSkills?.join(", ") || "General";
+
+  const weekTypeLabel = {
+    fundamentals: "Fundamentals Phase",
+    practice:     "Practice Phase",
+    advanced:     "Advanced Phase",
+    interview:    "Interview Ready",
+    generic:      "Preparation Phase",
+  };
+
+  const weekTypeColor = {
+    fundamentals: "#3b82f6",
+    practice:     "#a78bfa",
+    advanced:     "#fb923c",
+    interview:    "#34d399",
+    generic:      "#6b6b8a",
+  };
+
+  const weeksHTML = weeks.map((week, wi) => {
+    const color = weekTypeColor[week.weekType] || "#6b6b8a";
+    const label = weekTypeLabel[week.weekType] || "Phase";
+    const topicsHTML = (week.topics || []).map((t) => `
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
+        <span style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:50%;flex-shrink:0;margin-top:2px;"></span>
+        <span style="font-size:13px;color:#374151;line-height:1.5;">${t}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div style="break-inside:avoid;margin-bottom:20px;border-radius:12px;border:1px solid #e5e7eb;border-left:4px solid ${color};overflow:hidden;">
+        <div style="background:#f9fafb;padding:14px 16px;border-bottom:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span style="background:${color}22;color:${color};font-size:11px;font-weight:600;padding:2px 10px;border-radius:99px;border:1px solid ${color}44;">
+              Week ${week.week}
+            </span>
+            <span style="font-size:11px;color:#6b7280;">${label}</span>
+          </div>
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#111827;">${week.title}</h3>
+        </div>
+        <div style="padding:14px 16px;">
+          ${topicsHTML}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Study Roadmap — PrepForge</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1f2937; background: #fff; padding: 32px; }
+    @media print {
+      body { padding: 16px; }
+      @page { margin: 1.5cm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e5e7eb;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#3b82f6,#a78bfa);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <span style="color:white;font-size:20px;">⚡</span>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#111827;">PrepForge</div>
+        <div style="font-size:12px;color:#6b7280;">AI Placement Preparation Platform</div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;color:#6b7280;">Generated on</div>
+      <div style="font-size:12px;font-weight:600;color:#374151;">${date}</div>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div style="margin-bottom:20px;">
+    <h1 style="font-size:22px;font-weight:700;color:#111827;margin-bottom:6px;">Personalized Study Roadmap</h1>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:#6b7280;">
+        📚 <strong style="color:#374151;">Skills:</strong> ${skillsList}
+      </span>
+      <span style="font-size:13px;color:#6b7280;">
+        📅 <strong style="color:#374151;">Duration:</strong> ${weeks.length} weeks
+      </span>
+      <span style="font-size:13px;color:#6b7280;">
+        ✅ <strong style="color:#374151;">Total Topics:</strong> ${weeks.reduce((s, w) => s + (w.topics?.length || 0), 0)}
+      </span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div style="display:flex;gap:16px;margin-bottom:20px;padding:10px 14px;background:#f3f4f6;border-radius:8px;flex-wrap:wrap;">
+    <span style="font-size:11px;color:#6b7280;font-weight:600;">PHASES:</span>
+    ${Object.entries(weekTypeLabel).map(([k, v]) => `
+      <span style="font-size:11px;color:${weekTypeColor[k]};font-weight:500;">● ${v}</span>
+    `).join("")}
+  </div>
+
+  <!-- Weeks -->
+  ${weeksHTML}
+
+  <!-- Footer -->
+  <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;">
+    <p style="font-size:11px;color:#9ca3af;">
+      Generated by PrepForge — AI-Powered Placement Preparation Platform
+    </p>
+  </div>
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank", "width=900,height=700");
+  if (!printWindow) {
+    toast.error("Popup blocked — allow popups for this site and try again");
+    return;
+  }
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.focus();
+  // Small delay to let styles load before print dialog opens
+  setTimeout(() => {
+    printWindow.print();
+    // Close the window after print dialog closes (user saves or cancels)
+    printWindow.onafterprint = () => printWindow.close();
+  }, 400);
+  toast.success("PDF dialog opened — choose 'Save as PDF'");
+}
 
 const COMPANY_PRESETS = {
   product: ["DSA", "System Design", "DBMS", "OOP"],
@@ -255,9 +391,18 @@ export function Roadmap() {
             }
           </button>
           {plan && (
-            <button onClick={() => { setPlan(null); setCheckedItems({}); }} className="btn-ghost gap-1.5">
-              <RotateCcw className="w-3.5 h-3.5" />Reset
-            </button>
+            <>
+              <button
+                onClick={() => downloadRoadmapPDF(plan, plan.selectedSkills || plan.recognizedSkills)}
+                className="btn-secondary gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+              <button onClick={() => { setPlan(null); setCheckedItems({}); }} className="btn-ghost gap-1.5">
+                <RotateCcw className="w-3.5 h-3.5" />Reset
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -406,6 +551,17 @@ export function Roadmap() {
                 </span>
               </div>
             )}
+
+            {/* Bottom download button */}
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => downloadRoadmapPDF(plan, plan.selectedSkills || plan.recognizedSkills)}
+                className="btn-secondary gap-2 px-6"
+              >
+                <Download className="w-4 h-4" />
+                Download Roadmap as PDF
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
